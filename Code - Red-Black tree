@@ -1,0 +1,232 @@
+#include <iostream>
+#include <queue> // Для обхода в ширину
+using namespace std;
+
+enum Color { RED, BLACK };
+
+struct Node {
+    int data;
+    Color color;
+    Node* left, * right, * parent;
+
+    Node(int data) : data(data), color(RED), left(nullptr), right(nullptr), parent(nullptr) {}
+};
+
+class RedBlackTree {
+private:
+    Node* root;
+
+    void rotateLeft(Node*& node) {
+        Node* node_right = node->right;
+        node->right = node_right->left;
+
+        if (node->right != nullptr) {
+            node->right->parent = node;
+        }
+
+        node_right->parent = node->parent;
+
+        if (node->parent == nullptr) {
+            root = node_right;
+        }
+        else if (node == node->parent->left) {
+            node->parent->left = node_right;
+        }
+        else {
+            node->parent->right = node_right;
+        }
+
+        node_right->left = node;
+        node->parent = node_right;
+    }
+
+    void rotateRight(Node*& node) {
+        Node* node_left = node->left;
+        node->left = node_left->right;
+
+        if (node->left != nullptr) {
+            node->left->parent = node;
+        }
+
+        node_left->parent = node->parent;
+
+        if (node->parent == nullptr) {
+            root = node_left;
+        }
+        else if (node == node->parent->left) {
+            node->parent->left = node_left;
+        }
+        else {
+            node->parent->right = node_left;
+        }
+
+        node_left->right = node;
+        node->parent = node_left;
+    }
+
+    void fixViolation(Node*& node) {
+        Node* parent = nullptr;
+        Node* grandparent = nullptr;
+
+        while ((node != root) and (node->color == RED) and (node->parent->color == RED)) {
+            parent = node->parent;
+            grandparent = parent->parent;
+
+            if (parent == grandparent->left) {
+                Node* uncle = grandparent->right;
+
+                if (uncle != nullptr and uncle->color == RED) {
+                    grandparent->color = RED;
+                    parent->color = BLACK;
+                    uncle->color = BLACK;
+                    node = grandparent;
+                }
+                else {
+                    if (node == parent->right) {
+                        rotateLeft(parent);
+                        node = parent;
+                        parent = node->parent;
+                    }
+                    rotateRight(grandparent);
+                    swap(parent->color, grandparent->color);
+                    node = parent;
+                }
+            }
+            else {
+                Node* uncle = grandparent->left;
+
+                if ((uncle != nullptr) and (uncle->color == RED)) {
+                    grandparent->color = RED;
+                    parent->color = BLACK;
+                    uncle->color = BLACK;
+                    node = grandparent;
+                }
+                else {
+                    if (node == parent->left) {
+                        rotateRight(parent);
+                        node = parent;
+                        parent = node->parent;
+                    }
+                    rotateLeft(grandparent);
+                    swap(parent->color, grandparent->color);
+                    node = parent;
+                }
+            }
+        }
+        root->color = BLACK;
+    }
+
+public:
+    RedBlackTree() : root(nullptr) {}
+
+    void insert(const int& data) {
+        Node* newNode = new Node(data);
+        root = BSTInsert(root, newNode);
+        fixViolation(newNode);
+    }
+
+    Node* BSTInsert(Node* root, Node* newNode) {
+        if (root == nullptr) {
+            return newNode;
+        }
+
+        if (newNode->data < root->data) {
+            root->left = BSTInsert(root->left, newNode);
+            root->left->parent = root;
+        }
+        else if (newNode->data > root->data) {
+            root->right = BSTInsert(root->right, newNode);
+            root->right->parent = root;
+        }
+
+        return root;
+    }
+
+    void inorder() {
+        inorderHelper(root);
+    }
+
+    void inorderHelper(Node* root) {
+        if (root == nullptr) return;
+        inorderHelper(root->left);
+        cout << root->data << " ";
+        inorderHelper(root->right);
+    }
+
+    void preorder() {
+        cout << "Preorder traversal: ";
+        preorderHelper(root);
+        cout << std::endl;
+    }
+
+    void preorderHelper(Node* node) {
+        if (node == nullptr) return;
+        std::cout << node->data << " ";
+        preorderHelper(node->left);
+        preorderHelper(node->right);
+    }
+
+    void postorder() {
+        cout << "Postorder traversal: ";
+        postorderHelper(root);
+        cout << std::endl;
+    }
+
+    void postorderHelper(Node* node) {
+        if (node == nullptr)
+            return;
+        postorderHelper(node->left);
+        postorderHelper(node->right);
+        cout << node->data << " ";
+    }
+
+    void levelOrder() {
+        cout << "Level order traversal: ";
+        if (root == nullptr) return;
+
+        queue<Node*> q;
+        q.push(root);
+
+        while (!q.empty()) {
+            Node* current = q.front();
+            q.pop();
+            std::cout << current->data << " ";
+
+            if (current->left != nullptr) {
+                q.push(current->left);
+            }
+            if (current->right != nullptr) {
+                q.push(current->right);
+            }
+        }
+        cout << endl;
+    }
+
+    int getHeight() {
+        return getHeightHelper(root);
+    }
+
+    int getHeightHelper(Node* node) {
+        if (node == nullptr) return 0;
+        return 1 + max(getHeightHelper(node->left), getHeightHelper(node->right));
+    }
+};
+
+int main() {
+    RedBlackTree rbt;
+    cout << "Red-Black Tree" << endl;
+
+    for (int i = 2; i <= 101; ++i) {
+        rbt.insert(i);
+        cout << "RBT;" << i << ";" << rbt.getHeight() << endl;
+    }
+
+    cout << "Inorder traversal of Red-Black Tree: ";
+    rbt.inorder();
+    cout << endl;
+    rbt.preorder();
+    rbt.postorder();
+    rbt.levelOrder();
+
+    return 0;
+}

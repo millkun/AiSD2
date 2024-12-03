@@ -1,0 +1,148 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
+#include <queue> // Для обхода в ширину
+using namespace std;
+
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
+
+    Node(int value) : key(value), left(nullptr), right(nullptr) {}
+};
+
+class BST {
+public:
+    Node* root;
+
+    BST() : root(nullptr) {}
+
+    void insert(int key) {
+        root = insertRec(root, key);
+    }
+
+    int height() {
+        return heightRec(root);
+    }
+
+    void preorder() {
+        cout << "Preorder traversal: ";
+        preorderRec(root);
+        cout << endl;
+    }
+
+    void inorder() {
+        cout << "Inorder traversal: ";
+        inorderRec(root);
+        cout << endl;
+    }
+
+    void postorder() {
+        cout << "Postorder traversal: ";
+        postorderRec(root);
+        cout << endl;
+    }
+
+    void levelOrder() {
+        cout << "Level order traversal: ";
+        if (root == nullptr) return;
+
+        queue<Node*> q;
+        q.push(root);
+
+        while (!q.empty()) {
+            Node* current = q.front();
+            q.pop();
+            cout << current->key << " ";
+
+            if (current->left != nullptr) {
+                q.push(current->left);
+            }
+            if (current->right != nullptr) {
+                q.push(current->right);
+            }
+        }
+        cout << endl;
+    }
+
+private:
+    Node* insertRec(Node* node, int key) {
+        if (node == nullptr) {
+            return new Node(key);
+        }
+        if (key < node->key) {
+            node->left = insertRec(node->left, key);
+        }
+        else {
+            node->right = insertRec(node->right, key);
+        }
+        return node;
+    }
+
+    int heightRec(Node* node) {
+        if (node == nullptr) {
+            return 0;
+        }
+        int leftHeight = heightRec(node->left);
+        int rightHeight = heightRec(node->right);
+        return max(leftHeight, rightHeight) + 1;
+    }
+
+    void preorderRec(Node* node) {
+        if (node == nullptr) return;
+        cout << node->key << " ";
+        preorderRec(node->left);
+        preorderRec(node->right);
+    }
+
+    void inorderRec(Node* node) {
+        if (node == nullptr) return;
+        inorderRec(node->left);
+        cout << node->key << " ";
+        inorderRec(node->right);
+    }
+
+    void postorderRec(Node* node) {
+        if (node == nullptr) return;
+        postorderRec(node->left);
+        postorderRec(node->right);
+        cout << node->key << " ";
+    }
+};
+
+int main() {
+    srand(static_cast<unsigned int>(time(0))); // Инициализация генератора случайных чисел
+    vector<int> sizes = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101 }; // Размеры
+    vector<int> heights;
+    const int numTrials = 10; // Количество попыток для усреднения
+
+    for (int size : sizes) {
+        int totalHeight = 0;
+        for (int trial = 0; trial < numTrials; ++trial) {
+            BST tree;
+            for (int i = 0; i < size; ++i) {
+                int key = rand() % 10000; // Генерация случайного ключа
+                tree.insert(key);
+            }
+            totalHeight += tree.height();
+        }
+        int averageHeight = totalHeight / numTrials;
+        heights.push_back(averageHeight);
+        cout << "BST;" << size << ";" << averageHeight << endl;
+    }
+
+    // Обходы
+    BST tree;
+    for (int i = 2; i <= 101; ++i) {
+        tree.insert(i);
+    }
+
+    tree.inorder();
+    tree.preorder();
+    tree.postorder();
+    tree.levelOrder();
+
+    return 0;
+}
